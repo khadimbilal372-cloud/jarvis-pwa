@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#06111f">
+  <meta name="description" content="J.A.R.V.I.S. personal assistant progressive web app">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" href="./icons/jarvis.svg" type="image/svg+xml">
+  <title>J.A.R.V.I.S. — Personal Assistant</title>
+  <style>
+    :root{color-scheme:dark;--bg:#06111f;--panel:#0b1d30;--panel2:#102840;--line:#1d4965;--cyan:#38dfff;--text:#e8f7ff;--muted:#8eafc4;--green:#62e6b1}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% -15%,#123958 0,#06111f 46%,#030913 100%);color:var(--text);font:15px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh}
+    button,input{font:inherit}button{cursor:pointer;color:var(--text);border:1px solid var(--line);background:#102940;border-radius:12px;padding:11px 14px}button:active{transform:scale(.98)}button:focus-visible,input:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+    .wrap{max-width:760px;margin:auto;padding:18px 14px calc(24px + env(safe-area-inset-bottom))}
+    header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 2px 16px;border-bottom:1px solid #1a3e56}
+    .brand{display:flex;align-items:center;gap:11px}.brand img{width:42px;height:42px}.brand h1{font-size:17px;letter-spacing:2px;margin:0}.brand small{display:block;color:var(--muted);font-size:10px;letter-spacing:1.5px;margin-top:3px}
+    .status{font-size:11px;color:var(--green);border:1px solid #286b60;border-radius:99px;padding:6px 9px;white-space:nowrap}
+    .hero{text-align:center;padding:24px 0 18px}.reactor{width:138px;height:138px;margin:0 auto 12px;border-radius:50%;display:grid;place-items:center;position:relative;background:radial-gradient(circle,#b6faff 0 5%,#2adfff 8%,#087bb1 19%,#092d4b 42%,#06111f 65%);box-shadow:0 0 22px #12bce988,0 0 55px #0074b455,inset 0 0 20px #40eaff88}
+    .reactor:before,.reactor:after{content:"";position:absolute;inset:8px;border:2px solid #54eaff;border-radius:50%;opacity:.75}.reactor:after{inset:20px;border-style:dashed;animation:spin 18s linear infinite}
+    .reactor span{font-size:11px;letter-spacing:2px;color:#eaffff;text-shadow:0 0 10px #00cfff}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .hero h2{font-size:20px;letter-spacing:3px;margin:8px 0 5px}.hero p{color:var(--muted);font-size:12px;margin:0}
+    .card{background:linear-gradient(145deg,#0d2237ee,#081727ee);border:1px solid var(--line);border-radius:18px;padding:14px;margin:12px 0;box-shadow:0 12px 30px #0003}
+    .cardhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.cardhead strong{font-size:13px;letter-spacing:1px}.tiny{font-size:11px;color:var(--muted)}
+    #messages{display:flex;flex-direction:column;gap:10px;max-height:42vh;overflow:auto;padding:2px 1px 8px}
+    .msg{max-width:88%;padding:11px 13px;border-radius:14px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px}
+    .bot{align-self:flex-start;background:#102d45;border:1px solid #1b5675}.user{align-self:flex-end;background:#064b69;border:1px solid #087da2}
+    .composer{display:flex;gap:8px;margin-top:10px}.composer input{min-width:0;flex:1;background:#061522;color:var(--text);border:1px solid var(--line);border-radius:12px;padding:13px}
+    .send{background:#087da2;border-color:#18bde5;font-weight:650}.tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.tools button{font-size:12px;padding:9px 11px}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.tile{background:#0a1c2d;border:1px solid var(--line);border-radius:14px;padding:12px;text-align:left}.tile b{display:block;font-size:13px;margin:5px 0}.tile span{color:var(--muted);font-size:11px}
+    .settings{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-top:1px solid #17364c}.settings:first-of-type{border-top:0}
+    .note{font-size:11px;line-height:1.5;color:var(--muted)}footer{text-align:center;color:#6f91a8;font-size:10px;padding:16px}
+    @media(min-width:620px){.wrap{padding-top:24px}.hero{padding:30px 0 20px}.reactor{width:156px;height:156px}}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><img src="./icons/jarvis.svg" alt=""><div><h1>J.A.R.V.I.S.</h1><small>PERSONAL AI ASSISTANT</small></div></div>
+    <div class="status" id="status">● LOCAL MODE</div>
+  </header>
+
+  <section class="hero">
+    <div class="reactor"><span>J.A.R.V.I.S.</span></div>
+    <h2>AT YOUR SERVICE</h2>
+    <p>Intelligence with responsibility. Control stays with you.</p>
+  </section>
+
+  <section class="card">
+    <div class="cardhead"><strong>ASSISTANT CONSOLE</strong><span class="tiny" id="clock">READY</span></div>
+    <div id="messages" aria-live="polite">
+      <div class="msg bot">Good day. J.A.R.V.I.S. interface is online.\n\nI am currently in local demo mode. The AI service has not been connected yet. You can test the interface, local chat, and supported voice features.</div>
+    </div>
+    <form class="composer" id="chatForm">
+      <input id="messageInput" autocomplete="off" placeholder="Type a message..." aria-label="Message">
+      <button class="send" type="submit">Send</button>
+    </form>
+    <div class="tools">
+      <button id="micBtn" type="button">🎙 Voice input</button>
+      <button id="speakBtn" type="button">🔊 Read last reply</button>
+      <button id="clearBtn" type="button">Clear chat</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="cardhead"><strong>QUICK COMMANDS</strong><span class="tiny">LOCAL DEMO</span></div>
+    <div class="grid">
+      <button class="tile" data-command="Give me a short daily plan"><b>◷ Daily plan</b><span>Plan your day</span></button>
+      <button class="tile" data-command="Explain a topic in simple words"><b>◇ Learn</b><span>Study support</span></button>
+      <button class="tile" data-command="Help me troubleshoot a problem"><b>⌘ Troubleshoot</b><span>Work through an issue</span></button>
+      <button class="tile" data-command="Give me a privacy and security checklist"><b>⬡ Security</b><span>Safe digital habits</span></button>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="cardhead"><strong>SYSTEM SETTINGS</strong><span class="tiny">ON THIS DEVICE</span></div>
+    <div class="settings"><div><b>Remember chat locally</b><div class="tiny">Stores this demo conversation in this browser</div></div><input type="checkbox" id="memoryToggle" checked aria-label="Remember chat locally"></div>
+    <div class="settings"><div><b>Speak responses</b><div class="tiny">Uses device text-to-speech if available</div></div><input type="checkbox" id="speechToggle" aria-label="Speak responses"></div>
+    <div class="settings"><div><b>Delete local data</b><div class="tiny">Removes saved demo conversation</div></div><button id="deleteDataBtn" type="button">Delete</button></div>
+    <p class="note">Privacy: demo messages are stored only in this browser when local memory is enabled. No AI provider is connected in this version. Do not enter passwords, financial details, or other sensitive information.</p>
+  </section>
+  <footer>J.A.R.V.I.S. V1.0 • MOBILE PWA FOUNDATION • USER AUTHORITY FIRST</footer>
+</div>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const messages = $('messages'), input = $('messageInput');
+  let lastReply = "J.A.R.V.I.S. local demo mode is ready.";
+  const KEY = 'jarvis_demo_messages_v1';
+  const initial = messages.innerHTML;
+
+  function addMessage(text, who='bot', save=true) {
+    const div = document.createElement('div');
+    div.className = 'msg ' + who;
+    div.textContent = text;
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+    if (save) persist();
+    if (who === 'bot') {
+      lastReply = text;
+      if ($('speechToggle').checked) speak(text);
+    }
+  }
+  function persist() {
+    if (!$('memoryToggle').checked) return;
+    try { localStorage.setItem(KEY, messages.innerHTML); } catch(e) {}
+  }
+  function restore() {
+    try {
+      const saved = localStorage.getItem(KEY);
+      if (saved) messages.innerHTML = saved;
+    } catch(e) {}
+  }
+  function respond(text) {
+    const t = text.toLowerCase();
+    if (/(hello|hi|salam|assalam|aoa)/.test(t)) return "Wa Alaikum Assalam. J.A.R.V.I.S. is ready. What would you like to work on?";
+    if (/(who are you|your name|jarvis)/.test(t)) return "I am the J.A.R.V.I.S. interface prototype. My AI brain is not connected yet, so this version uses simple local demo responses.";
+    if (/(plan|schedule|today)/.test(t)) return "Let's make a simple plan:\n1. Choose your most important task.\n2. Break it into small steps.\n3. Complete one step at a time.\n4. Review your progress.\nTell me your task and I can help organize it.";
+    if (/(study|learn|explain)/.test(t)) return "Study mode is ready for testing. Send a topic and, once the AI service is connected, the assistant can explain it in Roman Urdu + English.";
+    if (/(security|privacy|password)/.test(t)) return "Security reminder: use unique passwords, enable two-step verification, never share one-time codes, and keep API keys out of public repositories.";
+    if (/(offline|internet|connection)/.test(t)) return "The interface can open offline after it has been cached. AI responses require an internet connection and a separately configured AI service.";
+    return "I received your message. This is the local demo version, so I cannot generate a full AI answer yet. The next development stage is to connect a suitable AI service securely.";
+  }
+  $('chatForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const text = input.value.trim();
+    if (!text) return;
+    addMessage(text, 'user');
+    input.value = '';
+    addMessage(respond(text), 'bot');
+  });
+  document.querySelectorAll('[data-command]').forEach(btn => btn.addEventListener('click', () => {
+    input.value = btn.dataset.command;
+    $('chatForm').requestSubmit();
+  }));
+  function speak(text) {
+    if (!('speechSynthesis' in window)) { addMessage("Text-to-speech is not supported by this browser.", 'bot'); return; }
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = 'en-US';
+    window.speechSynthesis.speak(utter);
+  }
+  $('speakBtn').addEventListener('click', () => speak(lastReply));
+  $('micBtn').addEventListener('click', () => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { addMessage("Voice recognition is not available in this browser. You can still type messages.", 'bot'); return; }
+    const recognition = new SR();
+    recognition.lang = 'ur-PK';
+    recognition.interimResults = false;
+    recognition.onresult = event => { input.value = event.results[0][0].transcript; $('chatForm').requestSubmit(); };
+    recognition.onerror = () => addMessage("Microphone recognition did not complete. Check browser microphone permission or type instead.", 'bot');
+    recognition.start();
+  });
+  $('clearBtn').addEventListener('click', () => {
+    messages.innerHTML = '<div class="msg bot">Chat cleared. J.A.R.V.I.S. is ready.</div>';
+    persist();
+  });
+  $('memoryToggle').addEventListener('change', () => {
+    if (!$('memoryToggle').checked) localStorage.removeItem(KEY); else persist();
+  });
+  $('deleteDataBtn').addEventListener('click', () => {
+    if (confirm('Delete the locally saved J.A.R.V.I.S. demo conversation?')) {
+      localStorage.removeItem(KEY);
+      messages.innerHTML = '<div class="msg bot">Local demo data deleted. J.A.R.V.I.S. is ready.</div>';
+    }
+  });
+  restore();
+  $('clock').textContent = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {
+      $('status').textContent = '● ONLINE / CACHE UNAVAILABLE';
+    }));
+  }
+})();
+</script>
+</body>
+</html>
